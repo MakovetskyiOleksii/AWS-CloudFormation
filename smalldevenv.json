@@ -1,0 +1,300 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "A example stack for creation in exist VPC: SecurityGroups, Subnets, EC2 - windows with features, linux with nginx",
+  "Metadata": {
+    "Version": "0.02",
+    "Update date": "19 August 2022",
+    "Author": "Makovetskyi Oleksii"
+  },
+
+  "Parameters" : {
+
+    "Region": {
+      "Description": "Region for work",
+      "Type": "String",
+      "Default": "eu-central-1"
+    },
+
+    "CIDRBlock": {
+      "Description": "CIDR for new subnet and than to the openning ssh, http and rdp",
+      "Type": "String",
+      "Default": "10.0.12.0/24"
+    },
+
+    "AZ": {
+      "Description": "AZ for work",
+      "Type": "AWS::EC2::AvailabilityZone::Name",
+      "Default": "eu-central-1a"
+    },
+
+    "CurrentVPCId": {
+      "Description": "VPC for work",
+      "Type": "AWS::EC2::VPC::Id",
+      "ConstraintDescription" : "must start with vpc-"
+    },
+
+    "ImageIdw1": {
+      "Description": "ImageId for EC2 instance for Windows 1",
+      "Type": "AWS::EC2::Image::Id",
+      "Default": "ami-0ab6c93b9ba89ec29",
+      "ConstraintDescription" : "must start with ami-"
+    },
+
+    "InstanceTypew1" : {
+      "Description" : "EC2 instance type for Windows 1",
+      "Type" : "String",
+      "Default" : "t2.micro",
+      "AllowedValues" : [ "t1.micro", "t2.nano", "t2.micro", "t2.small", "t2.medium", "t2.large", "m1.small", "m1.medium", "m1.large", "m1.xlarge", "m2.xlarge", "m2.2xlarge", "m2.4xlarge", "m3.medium", "m3.large", "m3.xlarge", "m3.2xlarge", "m4.large", "m4.xlarge", "m4.2xlarge", "m4.4xlarge", "m4.10xlarge", "c1.medium", "c1.xlarge", "c3.large", "c3.xlarge", "c3.2xlarge", "c3.4xlarge", "c3.8xlarge", "c4.large", "c4.xlarge", "c4.2xlarge", "c4.4xlarge", "c4.8xlarge", "g2.2xlarge", "g2.8xlarge", "r3.large", "r3.xlarge", "r3.2xlarge", "r3.4xlarge", "r3.8xlarge", "i2.xlarge", "i2.2xlarge", "i2.4xlarge", "i2.8xlarge", "d2.xlarge", "d2.2xlarge", "d2.4xlarge", "d2.8xlarge", "hi1.4xlarge", "hs1.8xlarge", "cr1.8xlarge", "cc2.8xlarge", "cg1.4xlarge"],
+      "ConstraintDescription" : "must be a valid EC2 instance type."
+    },
+
+    "Roles" : {
+      "Description" : "A SPACE seperated list of roles that you want to enable on this instance. Valid values are AD-Certificate, AD-Domain-Services, ADLDS, DHCP, DNS, Fax, File-Services, NPAS, Print-Services, Web-Server, and WDS.",
+      "Type" : "String",
+      "Default" : "None",
+      "AllowedPattern" : "(((AD\\-Certificate)|(AD\\-Domain\\-Services)|(ADLDS)|(DHCP)|(DNS)|(Fax)|(File\\-Services)|(NPAS)|(Print\\-Services)|(Web\\-Server)|(WDS))( ((AD\\-Certificate)|(AD\\-Domain\\-Services)|(ADLDS)|(DHCP)|(DNS)|(Fax)|(File\\-Services)|(NPAS)|(Print\\-Services)|(Web\\-Server)|(WDS)))*)|(None)"
+    },
+
+    "Features" : {
+      "Description" : "A SPACE seperated list of features that you want to enable on this instance. Valid values are NET-Framework, BITS, BitLocker, BranchCache, CMAK, Desktop-Experience, DAMC, Failover-Clustering, GPMC, Ink-Handwriting, Internet-Print-Client, ISNS, LPR-Port-Monitor, MSMQ, Multipath-IO, NLB, PNRP, qWave, Remote-Assistance, RDC, RPC-over-HTTP-Proxy, Simple-TCPIP, SMTP-Server, SNMP-Services, Storage-Mgr-SANS, Subsystem-UNIX-Apps, Telnet-Client, Telnet-Server, TFTP-Client, Biometric-Framework, Windows-Internal-DB, PowerShell-ISE, Backup-Features, Migration, WSRM, TIFF-IFilter, WinRM-IIS-Ext, WINS-Server, Wireless-Networking, and XPS-Viewer.",
+      "Type" : "String",
+      "Default" : "None",
+      "AllowedPattern" : "(((NET\\-Framework)|(BITS)|(BitLocker)|(BranchCache)|(CMAK)|(Desktop\\-Experience)|(DAMC)|(Failover\\-Clustering)|(GPMC)|(Ink\\-Handwriting)|(Internet\\-Print\\-Client)|(ISNS)|(LPR\\-Port\\-Monitor)|(MSMQ)|(Multipath\\-IO)|(NLB)|(PNRP)|(qWave)|(Remote\\-Assistance)|(RDC)|(RPC\\-over\\-HTTP\\-Proxy)|(Simple\\-TCPIP)|(SMTP\\-Server)|(SNMP\\-Services)|(Storage\\-Mgr\\-SANS)|(Subsystem\\-UNIX\\-Apps)|(Telnet\\-Client)|(Telnet\\-Server)|(TFTP\\-Client)|(Biometric\\-Framework)|(Windows\\-Internal\\-DB)|(PowerShell\\-ISE)|(Backup\\-Features)|(Migration)|(WSRM)|(TIFF\\-IFilter)|(WinRM\\-IIS\\-Ext)|(WINS\\-Server)|(Wireless\\-Networking)|(XPS\\-Viewer))( ((NET\\-Framework)|(BITS)|(BitLocker)|(BranchCache)|(CMAK)|(Desktop\\-Experience)|(DAMC)|(Failover\\-Clustering)|(GPMC)|(Ink\\-Handwriting)|(Internet\\-Print\\-Client)|(ISNS)|(LPR\\-Port\\-Monitor)|(MSMQ)|(Multipath\\-IO)|(NLB)|(PNRP)|(qWave)|(Remote\\-Assistance)|(RDC)|(RPC\\-over\\-HTTP\\-Proxy)|(Simple\\-TCPIP)|(SMTP\\-Server)|(SNMP\\-Services)|(Storage\\-Mgr\\-SANS)|(Subsystem\\-UNIX\\-Apps)|(Telnet\\-Client)|(Telnet\\-Server)|(TFTP\\-Client)|(Biometric\\-Framework)|(Windows\\-Internal\\-DB)|(PowerShell\\-ISE)|(Backup\\-Features)|(Migration)|(WSRM)|(TIFF\\-IFilter)|(WinRM\\-IIS\\-Ext)|(WINS\\-Server)|(Wireless\\-Networking)|(XPS\\-Viewer)))*( )*)|(None)"
+    },
+
+    "ImageIdl1": {
+      "Description": "ImageId for EC2 instance for Linux 1",
+      "Type": "AWS::EC2::Image::Id",
+      "Default": "ami-0c956e207f9d113d5",
+      "ConstraintDescription" : "must start with ami-"
+    },
+
+    "InstanceTypel1" : {
+      "Description" : "EC2 instance type for Linux 1",
+      "Type" : "String",
+      "Default" : "t2.micro",
+      "AllowedValues" : [ "t1.micro", "t2.nano", "t2.micro", "t2.small", "t2.medium", "t2.large", "m1.small", "m1.medium", "m1.large", "m1.xlarge", "m2.xlarge", "m2.2xlarge", "m2.4xlarge", "m3.medium", "m3.large", "m3.xlarge", "m3.2xlarge", "m4.large", "m4.xlarge", "m4.2xlarge", "m4.4xlarge", "m4.10xlarge", "c1.medium", "c1.xlarge", "c3.large", "c3.xlarge", "c3.2xlarge", "c3.4xlarge", "c3.8xlarge", "c4.large", "c4.xlarge", "c4.2xlarge", "c4.4xlarge", "c4.8xlarge", "g2.2xlarge", "g2.8xlarge", "r3.large", "r3.xlarge", "r3.2xlarge", "r3.4xlarge", "r3.8xlarge", "i2.xlarge", "i2.2xlarge", "i2.4xlarge", "i2.8xlarge", "d2.xlarge", "d2.2xlarge", "d2.4xlarge", "d2.8xlarge", "hi1.4xlarge", "hs1.8xlarge", "cr1.8xlarge", "cc2.8xlarge", "cg1.4xlarge"],
+      "ConstraintDescription" : "must be a valid EC2 instance type."
+    },
+
+    "KeyName": {
+      "Description" : "Name of an existing EC2 KeyPair",
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "ConstraintDescription" : "must be the name of an existing EC2 KeyPair."
+    }
+    },
+
+  "Resources" : {
+    "DevSubnet" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "VpcId" : { "Ref" : "CurrentVPCId" },
+        "CidrBlock" : {"Ref" : "CIDRBlock"},
+        "AvailabilityZone" : {"Ref": "AZ"},
+        "Tags" : [ { "Key" : "stack", "Value" : "production" }, {"Key": "Name", "Value": "devproduction"} ]
+      }
+    },
+    "SGforSSHandHTTPandRDP": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "SG to open 80, 22, 3389 ports",
+        "GroupName": "test-sg",
+        "VpcId" : {"Ref": "CurrentVPCId"},
+        "SecurityGroupIngress": [
+          {
+           "IpProtocol": "tcp",
+            "Description": "Open 22",
+           "FromPort": 22,
+           "ToPort": 22,
+           "CidrIp": {"Ref":  "CIDRBlock"}
+          },
+          {
+           "IpProtocol": "tcp",
+            "Description": "Open 22",
+           "FromPort": 80,
+           "ToPort": 80,
+           "CidrIp": {"Ref":  "CIDRBlock"}
+          },
+          {
+           "IpProtocol": "tcp",
+            "Description": "Open 3389",
+           "FromPort": 3389,
+           "ToPort": 3389,
+           "CidrIp": {"Ref":  "CIDRBlock"}
+          }
+        ]
+       }
+     },
+
+    "WindowsServer1": {
+      "Type": "AWS::EC2::Instance",
+      "Metadata" : {
+        "AWS::CloudFormation::Init" : {
+          "config" : {
+            "files" : {
+              "c:\\cfn\\cfn-hup.conf" : {
+                "content" : { "Fn::Join" : ["", [
+                  "[main]\n",
+                  "stack=", { "Ref" : "AWS::StackId" }, "\n",
+                  "region=", { "Ref" : "AWS::Region" }, "\n"
+                  ]]}
+              },
+              "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf" : {
+                "content": { "Fn::Join" : ["", [
+                  "[cfn-auto-reloader-hook]\n",
+                  "triggers=post.update\n",
+                  "path=Resources.WindowsServer.Metadata.AWS::CloudFormation::Init\n",
+                  "action=cfn-init.exe -v -s ", { "Ref" : "AWS::StackId" },
+                      " -r WindowsServer",
+                      " --region ", { "Ref" : "AWS::Region" }, "\n"
+                ]]}
+              }
+            },
+
+            "commands" : {
+              "1-install-roles" : {
+                "command" : { "Fn::Join" : [ "", [
+                  "if not \"None\" EQU \"",
+                  { "Ref" : "Roles" },
+                  "\" (servermanagercmd -install ",
+                  { "Ref" : "Roles" },
+                  " -restart)"]]
+                }
+              },
+              "2-install-features" : {
+                "command" : { "Fn::Join" : [ "", [
+                  "if not \"None\" EQU \"",
+                  { "Ref" : "Features" },
+                  "\" (servermanagercmd -install ",
+                  { "Ref" : "Features" },
+                  " -restart)"]]
+                }
+              },
+              "3-signal-success" : {
+                "command" : { "Fn::Join" : [ "", [
+                  "cfn-signal.exe -e %ERRORLEVEL% \"",
+                  { "Fn::Base64" : { "Ref" : "WindowsServerWaitHandle" }},
+                  "\""]]
+                }
+              }
+            },
+
+            "services" : {
+              "windows" : {
+                "cfn-hup" : {
+                  "enabled" : "true",
+                  "ensureRunning" : "true",
+                  "files" : ["c:\\cfn\\cfn-hup.conf", "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf"]
+                }
+              }
+            }
+          }
+        }
+      },
+      "Properties": {
+        "ImageId" : { "Ref" : "ImageIdw1" },
+        "InstanceType"   : { "Ref" : "InstanceTypew1" },
+        "SecurityGroupIds" : [
+              { "Fn::GetAtt" : [ "SGforSSHandHTTPandRDP", "GroupId" ] }
+            ],
+        "SubnetId": {"Ref":  "DevSubnet"},
+        "KeyName"        : { "Ref" : "KeyName" },
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "<script>\n",
+
+            "cfn-init.exe -v -s ", { "Ref" : "AWS::StackId" },
+            " -r WindowsServer",
+            " --region ", { "Ref" : "AWS::Region" }, "\n",
+
+            "</script>"
+        ]]}},
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Windows1Server"
+          }],
+        "BlockDeviceMappings": [
+          {
+            "DeviceName": "/dev/sda1",
+            "Ebs": {
+              "VolumeType": "gp2",
+              "VolumeSize": "30",
+              "DeleteOnTermination":"true",
+              "Encrypted": "true"
+            }
+          }
+        ]
+      }
+
+    },
+
+    "Linuxserver1": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "ImageId" : { "Ref" : "ImageIdl1" },
+        "InstanceType"   : { "Ref" : "InstanceTypel1" },
+        "SecurityGroupIds" : [
+              { "Fn::GetAtt" : [ "SGforSSHandHTTPandRDP", "GroupId" ] }
+            ],
+        "SubnetId": {"Ref":  "DevSubnet"},
+        "KeyName"        : { "Ref" : "KeyName" },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Linux1Server"
+          }],
+        "BlockDeviceMappings": [
+          {
+            "DeviceName": "/dev/xvda",
+            "Ebs": {
+              "VolumeType": "gp2",
+              "VolumeSize": "30",
+              "DeleteOnTermination":"true",
+              "Encrypted": "true"
+            }
+          },
+          {
+            "DeviceName": "/dev/xvdb",
+            "Ebs": {
+              "VolumeType": "gp2",
+              "VolumeSize": "50",
+              "DeleteOnTermination":"true",
+              "Encrypted": "true"
+             }
+           }
+        ],
+        "UserData"       : { "Fn::Base64" : { "Fn::Join" : ["", [
+             "#!/bin/bash -xe\n",
+             "yum update -y \n",
+             "sudo amazon-linux-extras install nginx1 -y \n",
+             "sudo systemctl enable nginx\n",
+             "sudo systemctl start nginx\n"
+        ]]}}
+      }
+    },
+
+    "WindowsServerWaitHandle" : {
+      "Type" : "AWS::CloudFormation::WaitConditionHandle"
+    },
+    "WindowsServerWaitCondition" : {
+      "Type" : "AWS::CloudFormation::WaitCondition",
+      "DependsOn" : "WindowsServer1",
+      "Properties" : {
+        "Handle" : {"Ref" : "WindowsServerWaitHandle"},
+        "Timeout" : "1800"
+      }
+    }
+  },
+
+  "Outputs" : {
+    "RolesEnabled" : {
+      "Value" : { "Ref" : "Roles" },
+      "Description" : "Roles enabled on Windows 1."
+    },
+    "FeaturesEnabled" : {
+      "Value" : { "Ref" : "Features" },
+      "Description" : "Features enabled on Windows 1."
+    }
+  }
+
+}
